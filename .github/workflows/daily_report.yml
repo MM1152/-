@@ -1,9 +1,6 @@
 name: 📋 일간보고 자동생성
 
 on:
-  schedule:
-    # 매일 한국시간 오전 9시 (UTC 0시)
-    - cron: '0 0 * * *'
   
   # 수동 실행 가능
   workflow_dispatch:
