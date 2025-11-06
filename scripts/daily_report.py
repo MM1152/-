@@ -153,28 +153,14 @@ def get_today_open_issues(github, repo_owner, repo_name):
     
     return open_issues
 
-def get_recent_pull_requests(github, repo_owner, repo_name, yesterday_str):
-    """최근 Pull Request 활동 가져오기"""
-    print("📋 최근 PR 활동을 검색 중...")
+def get_open_pull_requests(github, repo_owner, repo_name):
+    """현재 열린 Pull Request들 가져오기"""
+    print("📋 진행 중인 PR을 검색 중...")
     
     try:
-        # 어제와 오늘 merged된 PR들
-        merged_query = f"repo:{repo_owner}/{repo_name} is:pr is:merged merged:>={yesterday_str}"
-        merged_prs = github.search_issues(query=merged_query)
-        
         # 현재 열린 PR들
         open_query = f"repo:{repo_owner}/{repo_name} is:pr is:open"
         open_prs = github.search_issues(query=open_query)
-        
-        merged_pr_list = []
-        for pr in merged_prs:
-            merged_pr_list.append({
-                'title': pr.title,
-                'number': pr.number,
-                'url': pr.html_url,
-                'author': pr.user.login,
-                'merged_at': pr.closed_at
-            })
         
         open_pr_list = []
         for pr in open_prs:
@@ -186,11 +172,11 @@ def get_recent_pull_requests(github, repo_owner, repo_name, yesterday_str):
                 'created_at': pr.created_at
             })
         
-        return merged_pr_list, open_pr_list
+        return open_pr_list
     
     except Exception as e:
         print(f"⚠️ PR 검색 중 오류: {e}")
-        return [], []
+        return []
 
 def main():
     # 현재 날짜 (한국 시간 기준)
@@ -217,9 +203,8 @@ def main():
         open_issues = get_today_open_issues(github, REPO_OWNER, TARGET_REPO)
         print(f"🔄 진행 중인 이슈: {len(open_issues)}개")
         
-        # 최근 PR 활동
-        merged_prs, open_prs = get_recent_pull_requests(github, REPO_OWNER, TARGET_REPO, yesterday)
-        print(f"🔀 최근 병합된 PR: {len(merged_prs)}개")
+        # 진행 중인 PR
+        open_prs = get_open_pull_requests(github, REPO_OWNER, TARGET_REPO)
         print(f"🔀 진행 중인 PR: {len(open_prs)}개")
         
     except Exception as e:
@@ -227,7 +212,6 @@ def main():
         contributors = []
         completed_issues = []
         open_issues = []
-        merged_prs = []
         open_prs = []
     
     print("📝 보고서 내용 생성 완료")
@@ -252,21 +236,16 @@ def main():
     blocks.append(create_notion_heading("전일 보고", 2))
     
     # 완료된 이슈
-    blocks.append(create_notion_heading("완료된 이슈", 3))
+    blocks.append(create_notion_heading("완료", 3))
     if completed_issues:
         blocks.extend(create_notion_bullet_list(completed_issues))
     else:
         blocks.extend(create_notion_bullet_list(["완료된 이슈 없음"]))
     
-    # 병합된 PR
-    if merged_prs:
-        blocks.append(create_notion_heading("병합된 Pull Request", 3))
-        blocks.extend(create_notion_bullet_list(merged_prs))
-    
     # 미완료 작업 (진행 중인 이슈들)
     blocks.append(create_notion_heading("미완료 (사유, 처리)", 3))
     if open_issues:
-        # 우선순위가 높은 이슈들 (라벨 기준 등)
+        # 진행 중인 이슈들
         priority_issues = []
         for issue in open_issues[:10]:  # 최대 10개
             status = "진행중"
@@ -306,27 +285,11 @@ def main():
         for pr in open_prs[:3]:
             today_tasks.append(f"  • {pr['title']} (#{pr['number']}) by @{pr['author']}")
     
-    # 기본 개발 작업들
-    today_tasks.extend([
-        "🔍 코드 리뷰 및 품질 개선",
-        "🐛 버그 수정 및 테스트",
-        "📚 문서화 업데이트",
-        "🔧 개발 환경 개선"
-    ])
+    # 할일이 없으면 기본 메시지
+    if not today_tasks:
+        today_tasks.append("새로운 이슈 및 개발 작업 계획 수립")
     
     blocks.extend(create_notion_bullet_list(today_tasks))
-    
-    # 팀 현황 요약
-    blocks.append(create_divider())
-    blocks.append(create_notion_heading("팀 현황 요약", 2))
-    
-    summary_items = [
-        f"총 기여자: {len(contributors)}명",
-        f"어제 완료 이슈: {len(completed_issues)}개",
-        f"진행 중인 이슈: {len(open_issues)}개",
-        f"진행 중인 PR: {len(open_prs)}개"
-    ]
-    blocks.extend(create_notion_bullet_list(summary_items))
     
     try:
         new_page = notion.pages.create(
