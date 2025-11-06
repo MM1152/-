@@ -1,30 +1,34 @@
-name: "12팀 일간보고 자동생성"
+name: 📋 일간보고 자동생성
 
 on:
   schedule:
-    - cron: '0 0 * * *' # UTC 기준, 한국 오전 9시는 '0 0 * * *'
-  workflow_dispatch: # 수동 실행 옵션(테스트용)
+    # 매일 한국시간 오전 9시 (UTC 0시)
+    - cron: '0 0 * * *'
+  
+  # 수동 실행 가능
+  workflow_dispatch:
 
 jobs:
-  make-daily-report:
+  create-daily-report:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies and run script
-        run: |
-          pip install PyGithub
-          python scripts/generate_daily_report.py
-
-      - name: Commit & push report
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "자동 생성: 12팀 일간보고 - $(date +'%Y-%m-%d')"
-          file_pattern: "reports/*.md"
+    - name: 📥 코드 체크아웃
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Python 설치
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: 📦 의존성 설치
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 📋 일간보고 생성 및 Notion 저장
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      run: |
+        python scripts/daily_report.py
