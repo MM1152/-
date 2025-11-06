@@ -4,7 +4,7 @@ from github import Github
 from notion_client import Client
 
 # ⚠️ 여기를 본인 정보로 수정하세요
-NOTION_DB_ID = "2a31ff65-7f58-8089-8d15-000cf8e24441"  # 하이픈 제거된 32자리 ID
+NOTION_DB_ID = "2a31ff65-7f58-80ef-9cd8-cac9ad2a7c19"  # 하이픈 제거된 32자리 ID
 TEAM_NAME = "12팀 (정상진, 천민성)"
 GITHUB_USERNAME = "MM1152"  # 본인 GitHub 사용자명
 
