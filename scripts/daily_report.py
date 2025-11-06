@@ -4,7 +4,7 @@ from github import Github
 from notion_client import Client
 
 # ⚠️ 여기를 본인 정보로 수정하세요
-NOTION_DB_ID = "여기에_데이터베이스_ID_입력"  # Step 1-4에서 복사한 32자리
+NOTION_DB_ID = "2a31ff657f5880898d15000cf8e24441&source=copy_link"  # Step 1-4에서 복사한 32자리
 TEAM_NAME = "12팀 (정상진, 천민성)"
 GITHUB_USERNAME = "MM1152"  # 본인 GitHub 사용자명
 
