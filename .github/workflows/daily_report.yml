@@ -1,0 +1,30 @@
+name: "12팀 일간보고 자동생성"
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # UTC 기준, 한국 오전 9시는 '0 0 * * *'
+  workflow_dispatch: # 수동 실행 옵션(테스트용)
+
+jobs:
+  make-daily-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies and run script
+        run: |
+          pip install PyGithub
+          python scripts/generate_daily_report.py
+
+      - name: Commit & push report
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "자동 생성: 12팀 일간보고 - $(date +'%Y-%m-%d')"
+          file_pattern: "reports/*.md"
